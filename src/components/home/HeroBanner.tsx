@@ -60,7 +60,7 @@ const heroSlides = [
       "Official distributor of Shoei, AGV, and Arai helmets — all ECE 22.06 & SNELL 2020 certified. Expert helmet fitting consultations at our Gulshan-2 flagship showroom.",
     primaryCta: { href: "/category/helmets", label: "Shop All Helmets" },
     secondaryCta: { href: "/product/shoei-nxr2-motegi-2-tc1", label: "Shoei NXR2 Details" },
-    image: "https://images.unsplash.com/photo-1558618047-f4e90b59e55a?q=80&w=1200&auto=format&fit=crop",
+    image: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?q=80&w=1200&auto=format&fit=crop",
     imageAlt: "Shoei Helmet Motoplex Bangladesh",
     cardTitle: "Shoei NXR2 Motegi2 TC-1",
     cardSub: "ECE 22.06 • SNELL 2020 Certified",

@@ -67,7 +67,7 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
     >
       {/* Image Container */}
       <div className="relative aspect-square w-full bg-zinc-50 overflow-hidden">
-        <Link href={`/product/${product.slug}`} className="block w-full h-full">
+        <Link href={`/product/${product.slug}`} className="relative block w-full h-full">
           <Image
             src={displayImage}
             alt={product.name}
