@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, MapPin, Plus, Trash2, Edit2, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, MapPin, Plus, Trash2, Edit2, CheckCircle2, X } from "lucide-react";
 import { useToast } from "@/context/ToastContext";
+import { bangladeshDivisions } from "@/data/bangladesh";
 
 interface AddressItem {
   id: string;
@@ -50,6 +51,32 @@ export default function AddressesPage() {
   const [newName, setNewName] = useState("");
   const [newPhone, setNewPhone] = useState("");
   const [newAddress, setNewAddress] = useState("");
+  const [newDivision, setNewDivision] = useState("Dhaka");
+  const [newDistrict, setNewDistrict] = useState("Dhaka City");
+  const [newArea, setNewArea] = useState("Gulshan");
+
+  const currentDivData = bangladeshDivisions.find((d) => d.division === newDivision);
+  const availableDistricts = currentDivData ? Object.keys(currentDivData.districts) : [];
+  const availableAreas =
+    currentDivData && currentDivData.districts[newDistrict]
+      ? currentDivData.districts[newDistrict]
+      : [];
+
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = "hidden";
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") setIsModalOpen(false);
+      };
+      window.addEventListener("keydown", handleKeyDown);
+      return () => {
+        document.body.style.overflow = "";
+        window.removeEventListener("keydown", handleKeyDown);
+      };
+    } else {
+      document.body.style.overflow = "";
+    }
+  }, [isModalOpen]);
 
   const handleSetDefault = (id: string) => {
     setAddresses((prev) =>
@@ -80,9 +107,9 @@ export default function AddressesPage() {
       name: newName,
       phone: newPhone || "+880 1711-234567",
       address: newAddress,
-      area: "Gulshan",
-      district: "Dhaka City",
-      division: "Dhaka",
+      area: newArea,
+      district: newDistrict,
+      division: newDivision,
     };
 
     setAddresses((prev) => [...prev, newAddr]);
@@ -176,56 +203,142 @@ export default function AddressesPage() {
 
       {/* Add Address Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="w-full max-w-md bg-white rounded-3xl border border-zinc-200 p-6 space-y-4 shadow-2xl">
-            <h3 className="font-bold text-sm text-zinc-950 pb-2 border-b border-zinc-100">
-              Add New Bangladesh Address
-            </h3>
+        <div
+          onClick={() => setIsModalOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-lg bg-white rounded-3xl border border-zinc-200 p-6 sm:p-7 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto"
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+              <h3 className="font-bold text-base text-zinc-950">
+                Add New Bangladesh Delivery Address
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="p-1.5 text-zinc-400 hover:text-zinc-950 rounded-lg hover:bg-zinc-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-            <form onSubmit={handleAddAddress} className="space-y-3 text-xs">
+            <form onSubmit={handleAddAddress} className="space-y-3.5 text-xs">
               <div>
                 <label className="font-bold text-zinc-900 block mb-1">Address Label</label>
                 <input
                   type="text"
                   value={newLabel}
                   onChange={(e) => setNewLabel(e.target.value)}
-                  placeholder="e.g. Vacation Home, Showroom, Office"
-                  className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2 text-zinc-900 focus:outline-none focus:ring-1 focus:ring-red-600"
+                  placeholder="e.g. Residence, Motoplex Club, Office"
+                  className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-900 focus:outline-none focus:ring-1 focus:ring-red-600"
                 />
               </div>
 
-              <div>
-                <label className="font-bold text-zinc-900 block mb-1">Recipient Name *</label>
-                <input
-                  type="text"
-                  required
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  placeholder="Full recipient name"
-                  className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2 text-zinc-900 focus:outline-none focus:ring-1 focus:ring-red-600"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-zinc-900 block mb-1">Recipient Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    placeholder="Full recipient name"
+                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-900 focus:outline-none focus:ring-1 focus:ring-red-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-zinc-900 block mb-1">Contact Phone Number *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newPhone}
+                    onChange={(e) => setNewPhone(e.target.value)}
+                    placeholder="+880 17XXXXXXXX"
+                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3.5 py-2.5 text-zinc-900 focus:outline-none focus:ring-1 focus:ring-red-600"
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className="font-bold text-zinc-900 block mb-1">Contact Phone Number *</label>
-                <input
-                  type="text"
-                  required
-                  value={newPhone}
-                  onChange={(e) => setNewPhone(e.target.value)}
-                  placeholder="+880 17XXXXXXXX"
-                  className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2 text-zinc-900 focus:outline-none focus:ring-1 focus:ring-red-600"
-                />
+              {/* Geographic Dropdowns: Division, District, Area */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="font-bold text-zinc-900 block mb-1">Division *</label>
+                  <select
+                    value={newDivision}
+                    onChange={(e) => {
+                      const div = e.target.value;
+                      setNewDivision(div);
+                      const dData = bangladeshDivisions.find((d) => d.division === div);
+                      const fDist = dData ? Object.keys(dData.districts)[0] : "";
+                      setNewDistrict(fDist);
+                      setNewArea(dData?.districts[fDist]?.[0] || "");
+                    }}
+                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-2.5 py-2.5 text-zinc-900 focus:outline-none focus:ring-1 focus:ring-red-600 font-semibold cursor-pointer"
+                  >
+                    {bangladeshDivisions.map((d) => (
+                      <option key={d.division} value={d.division}>
+                        {d.division}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-bold text-zinc-900 block mb-1">District *</label>
+                  <select
+                    value={newDistrict}
+                    onChange={(e) => {
+                      const dist = e.target.value;
+                      setNewDistrict(dist);
+                      setNewArea(currentDivData?.districts[dist]?.[0] || "");
+                    }}
+                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-2.5 py-2.5 text-zinc-900 focus:outline-none focus:ring-1 focus:ring-red-600 font-semibold cursor-pointer"
+                  >
+                    {availableDistricts.map((dst) => (
+                      <option key={dst} value={dst}>
+                        {dst}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-bold text-zinc-900 block mb-1">Thana / Area *</label>
+                  {availableAreas.length > 0 ? (
+                    <select
+                      value={newArea}
+                      onChange={(e) => setNewArea(e.target.value)}
+                      className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-2.5 py-2.5 text-zinc-900 focus:outline-none focus:ring-1 focus:ring-red-600 font-semibold cursor-pointer"
+                    >
+                      {availableAreas.map((a) => (
+                        <option key={a} value={a}>
+                          {a}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      value={newArea}
+                      onChange={(e) => setNewArea(e.target.value)}
+                      placeholder="Area name"
+                      className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-2.5 py-2.5 text-zinc-900 focus:outline-none focus:ring-1 focus:ring-red-600"
+                    />
+                  )}
+                </div>
               </div>
 
               <div>
                 <label className="font-bold text-zinc-900 block mb-1">Full Street Address *</label>
                 <textarea
-                  rows={3}
+                  rows={2}
                   required
                   value={newAddress}
                   onChange={(e) => setNewAddress(e.target.value)}
-                  placeholder="House, Road, Area, City"
+                  placeholder="House, Road, Block, Holding number"
                   className="w-full bg-zinc-50 border border-zinc-200 rounded-xl p-3 text-zinc-900 focus:outline-none focus:ring-1 focus:ring-red-600"
                 />
               </div>
@@ -234,13 +347,13 @@ export default function AddressesPage() {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="flex-1 bg-zinc-100 text-zinc-700 font-bold py-2.5 rounded-xl hover:bg-zinc-200"
+                  className="flex-1 bg-zinc-100 text-zinc-700 font-bold py-3 rounded-xl hover:bg-zinc-200 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-red-600 text-white font-bold py-2.5 rounded-xl hover:bg-red-700"
+                  className="flex-1 bg-red-600 text-white font-bold py-3 rounded-xl hover:bg-red-700 transition-colors shadow-md cursor-pointer"
                 >
                   Save Address
                 </button>

@@ -146,6 +146,30 @@ export default function CheckoutPage() {
     );
   }
 
+  if (items.length === 0) {
+    return (
+      <div className="bg-zinc-50 min-h-[70vh] flex items-center justify-center py-16 px-4">
+        <div className="max-w-md w-full bg-white rounded-3xl border border-zinc-200 p-8 text-center space-y-5 shadow-sm animate-in zoom-in-95 duration-200">
+          <div className="w-16 h-16 rounded-full bg-red-50 text-red-600 mx-auto flex items-center justify-center">
+            <CreditCard className="w-8 h-8" />
+          </div>
+          <div className="space-y-1">
+            <h2 className="text-xl font-black text-zinc-950">Your Cart is Empty</h2>
+            <p className="text-xs text-zinc-500">
+              Please select motorcycles, protective gear, or accessories before proceeding to checkout.
+            </p>
+          </div>
+          <Link
+            href="/shop"
+            className="inline-block w-full bg-red-600 hover:bg-red-700 text-white font-bold text-xs py-3.5 rounded-xl shadow-md transition-all active:scale-98"
+          >
+            Explore Motoplex Catalog
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-zinc-50/70 min-h-screen py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">

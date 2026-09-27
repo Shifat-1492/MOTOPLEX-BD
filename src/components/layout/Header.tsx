@@ -41,12 +41,30 @@ export function Header() {
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const searchRef = useRef<HTMLDivElement>(null);
 
+  // Hover buffer ref to prevent accidental closing
+  const megaMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleOpenMegaMenu = () => {
+    if (megaMenuTimeoutRef.current) clearTimeout(megaMenuTimeoutRef.current);
+    setIsMegaMenuOpen(true);
+  };
+
+  const handleCloseMegaMenu = () => {
+    if (megaMenuTimeoutRef.current) clearTimeout(megaMenuTimeoutRef.current);
+    megaMenuTimeoutRef.current = setTimeout(() => {
+      setIsMegaMenuOpen(false);
+    }, 200);
+  };
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (megaMenuTimeoutRef.current) clearTimeout(megaMenuTimeoutRef.current);
+    };
   }, []);
 
   // Filter search results
@@ -132,9 +150,10 @@ export function Header() {
 
         {/* Main Navbar */}
         <div
-          className={`border-b border-zinc-200 bg-white/95 backdrop-blur-md transition-shadow duration-300 ${
+          className={`border-b border-zinc-200 bg-white/95 backdrop-blur-md transition-shadow duration-300 relative ${
             isScrolled ? "shadow-md py-2.5" : "py-4"
           }`}
+          onMouseLeave={handleCloseMegaMenu}
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
             {/* Left: Mobile hamburger & Logo */}
@@ -171,11 +190,14 @@ export function Header() {
             <nav className="hidden lg:flex items-center gap-7">
               {/* Mega Menu Toggle */}
               <div
-                className="relative"
-                onMouseEnter={() => setIsMegaMenuOpen(true)}
-                onMouseLeave={() => setIsMegaMenuOpen(false)}
+                onMouseEnter={handleOpenMegaMenu}
+                className="py-1"
               >
-                <button className="flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-zinc-900 hover:text-red-600 py-2 transition-colors">
+                <button
+                  type="button"
+                  onClick={() => setIsMegaMenuOpen((prev) => !prev)}
+                  className="flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-zinc-900 hover:text-red-600 py-2 transition-colors cursor-pointer"
+                >
                   <span>Categories & Models</span>
                   <ChevronDown
                     className={`w-3.5 h-3.5 transition-transform duration-200 ${
@@ -183,8 +205,6 @@ export function Header() {
                     }`}
                   />
                 </button>
-
-                {isMegaMenuOpen && <MegaMenu onClose={() => setIsMegaMenuOpen(false)} />}
               </div>
 
               <Link
@@ -206,10 +226,17 @@ export function Header() {
                 Riding Gear
               </Link>
               <Link
-                href="/category/performance-parts"
+                href="/services"
+                className="text-xs font-bold uppercase tracking-wider text-zinc-900 hover:text-red-600 transition-colors flex items-center gap-1"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse" />
+                <span>Workshop & Services</span>
+              </Link>
+              <Link
+                href="/dealerships"
                 className="text-xs font-bold uppercase tracking-wider text-zinc-700 hover:text-red-600 transition-colors"
               >
-                Performance
+                3 Dealerships
               </Link>
               <Link
                 href="/shop"
@@ -378,6 +405,17 @@ export function Header() {
               </button>
             </div>
           </div>
+
+          {/* Full-width Mega Menu anchored to Navbar */}
+          {isMegaMenuOpen && (
+            <div
+              onMouseEnter={handleOpenMegaMenu}
+              onMouseLeave={handleCloseMegaMenu}
+              className="w-full"
+            >
+              <MegaMenu onClose={() => setIsMegaMenuOpen(false)} />
+            </div>
+          )}
         </div>
       </header>
 

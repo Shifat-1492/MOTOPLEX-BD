@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { X, ChevronDown, ChevronRight, Phone, MapPin, Shield, Search, ArrowRight } from "lucide-react";
 import { categories } from "@/data/categories";
 
@@ -11,8 +12,25 @@ interface MobileMenuDrawerProps {
 }
 
 export function MobileMenuDrawer({ isOpen, onClose }: MobileMenuDrawerProps) {
+  const router = useRouter();
   const [expandedCat, setExpandedCat] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") onClose();
+      };
+      window.addEventListener("keydown", handleKeyDown);
+      return () => {
+        document.body.style.overflow = "";
+        window.removeEventListener("keydown", handleKeyDown);
+      };
+    } else {
+      document.body.style.overflow = "";
+    }
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -51,7 +69,7 @@ export function MobileMenuDrawer({ isOpen, onClose }: MobileMenuDrawerProps) {
               onSubmit={(e) => {
                 e.preventDefault();
                 if (searchQuery.trim()) {
-                  window.location.href = `/shop?q=${encodeURIComponent(searchQuery)}`;
+                  router.push(`/shop?q=${encodeURIComponent(searchQuery)}`);
                   onClose();
                 }
               }}
@@ -143,11 +161,30 @@ export function MobileMenuDrawer({ isOpen, onClose }: MobileMenuDrawerProps) {
               </p>
               <div className="space-y-2 text-xs font-medium text-zinc-800">
                 <Link
+                  href="/services"
+                  onClick={onClose}
+                  className="flex items-center justify-between py-2 text-red-600 font-bold bg-red-50/80 px-3 rounded-xl border border-red-200"
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
+                    <span>Workshop & Services (Master Service)</span>
+                  </span>
+                  <ArrowRight className="w-3.5 h-3.5 text-red-600" />
+                </Link>
+                <Link
+                  href="/dealerships"
+                  onClick={onClose}
+                  className="flex items-center justify-between py-1.5 hover:text-red-600"
+                >
+                  <span>Our 3 Dealerships & Showrooms</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-zinc-400" />
+                </Link>
+                <Link
                   href="/shop"
                   onClick={onClose}
                   className="flex items-center justify-between py-1.5 hover:text-red-600"
                 >
-                  <span>Explore Full Catalog</span>
+                  <span>Explore Full Parts Catalog</span>
                   <ArrowRight className="w-3.5 h-3.5 text-zinc-400" />
                 </Link>
                 <Link

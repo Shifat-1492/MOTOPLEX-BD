@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -44,12 +44,39 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<"specs" | "shipping" | "warranty" | "reviews">("specs");
 
+  // Sync state whenever viewing product changes
+  useEffect(() => {
+    setSelectedImage(0);
+    setSelectedSize(product.sizes?.[0] || "");
+    setSelectedColor(product.colors?.[0]?.name || "");
+    setSelectedMaterial(product.materials?.[0] || "");
+    setQuantity(1);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [product.id, product.sizes, product.colors, product.materials]);
+
   // Reviews state for writing a new review demo
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [reviewName, setReviewName] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState("");
   const [reviewsList, setReviewsList] = useState(mockReviews);
+
+  // Lock scroll when review modal is open
+  useEffect(() => {
+    if (isReviewModalOpen) {
+      document.body.style.overflow = "hidden";
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") setIsReviewModalOpen(false);
+      };
+      window.addEventListener("keydown", handleKeyDown);
+      return () => {
+        document.body.style.overflow = "";
+        window.removeEventListener("keydown", handleKeyDown);
+      };
+    } else {
+      document.body.style.overflow = "";
+    }
+  }, [isReviewModalOpen]);
 
   const isWishlisted = isInWishlist(product.id);
 

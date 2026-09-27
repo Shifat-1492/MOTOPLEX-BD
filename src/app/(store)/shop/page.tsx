@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, Suspense } from "react";
+import React, { useState, useMemo, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -43,6 +43,38 @@ function ShopContent() {
   };
 
   const [filters, setFilters] = useState<FilterValues>(defaultFilters);
+
+  // Sync with searchParams if URL changes
+  useEffect(() => {
+    const cat = searchParams.get("category") || "";
+    const sub = searchParams.get("subcategory") || "";
+    const q = searchParams.get("q") || "";
+    if (cat || sub) {
+      setFilters((prev) => ({ ...prev, category: cat, subcategory: sub }));
+      setCurrentPage(1);
+    }
+    if (q) {
+      setSearchQuery(q);
+      setCurrentPage(1);
+    }
+  }, [searchParams]);
+
+  // Lock scroll when mobile filter is open
+  useEffect(() => {
+    if (isMobileFilterOpen) {
+      document.body.style.overflow = "hidden";
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") setIsMobileFilterOpen(false);
+      };
+      window.addEventListener("keydown", handleKeyDown);
+      return () => {
+        document.body.style.overflow = "";
+        window.removeEventListener("keydown", handleKeyDown);
+      };
+    } else {
+      document.body.style.overflow = "";
+    }
+  }, [isMobileFilterOpen]);
 
   // Active category details
   const activeCategoryObj = useMemo(() => {
@@ -150,6 +182,14 @@ function ShopContent() {
   // Pagination (8 items per page)
   const itemsPerPage = 8;
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage) || 1;
+
+  // Auto-clamp page if filters change and reduce total page count
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(1);
+    }
+  }, [totalPages, currentPage]);
+
   const paginatedProducts = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return filteredProducts.slice(start, start + itemsPerPage);

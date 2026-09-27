@@ -76,47 +76,48 @@ const heroSlides = [
 
 export function HeroBanner() {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
 
-  const goToSlide = useCallback(
-    (index: number) => {
-      if (isTransitioning || index === currentSlide) return;
-      setIsTransitioning(true);
-      setCurrentSlide(index);
-      setTimeout(() => setIsTransitioning(false), 600);
-    },
-    [currentSlide, isTransitioning]
-  );
+  const goToSlide = useCallback((index: number) => {
+    setCurrentSlide(index);
+  }, []);
 
   const nextSlide = useCallback(() => {
-    goToSlide((currentSlide + 1) % heroSlides.length);
-  }, [currentSlide, goToSlide]);
+    setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+  }, []);
 
   const prevSlide = useCallback(() => {
-    goToSlide((currentSlide - 1 + heroSlides.length) % heroSlides.length);
-  }, [currentSlide, goToSlide]);
+    setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
+  }, []);
 
-  // Auto-advance every 6 seconds
+  // Auto-advance every 6 seconds when not paused by user hover
   useEffect(() => {
-    const timer = setInterval(nextSlide, 6000);
+    if (isPaused) return;
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+    }, 6000);
     return () => clearInterval(timer);
-  }, [nextSlide]);
+  }, [isPaused]);
 
   const slide = heroSlides[currentSlide];
 
   return (
-    <section className="relative bg-zinc-950 text-white overflow-hidden">
+    <section
+      className="relative bg-zinc-950 text-white overflow-hidden"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
       {/* Background Ambient Glows */}
-      <div className="absolute top-0 right-1/4 w-96 h-96 bg-red-600/12 rounded-full blur-3xl pointer-events-none transition-all duration-1000" />
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-red-600/12 rounded-full blur-3xl pointer-events-none transition-all duration-1000 transform-gpu" />
       <div className="absolute bottom-0 left-10 w-80 h-80 bg-zinc-800/20 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 lg:py-28 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
           {/* Left Hero Content */}
           <div
-            className="lg:col-span-7 space-y-6 text-center lg:text-left"
+            className="lg:col-span-7 space-y-6 text-center lg:text-left transition-all duration-500 transform-gpu"
             key={slide.id}
-            style={{ animation: "fade-in-up 0.5s cubic-bezier(0.16,1,0.3,1) forwards" }}
+            style={{ animation: "fade-in-up 0.4s cubic-bezier(0.16,1,0.3,1) forwards" }}
           >
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-xs text-zinc-300">
               <span className="flex h-2 w-2 rounded-full bg-red-500 animate-ping" />
@@ -129,13 +130,20 @@ export function HeroBanner() {
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.05] text-white">
               {slide.headline.map((line, i) => (
-                <span key={i} className={`block ${line === slide.highlightWord ? "text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-red-600 to-amber-500" : ""}`}>
+                <span
+                  key={i}
+                  className={`block ${
+                    line === slide.highlightWord
+                      ? "text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-red-600 to-amber-500"
+                      : ""
+                  }`}
+                >
                   {line}
                 </span>
               ))}
             </h1>
 
-            <p className="text-sm sm:text-base text-zinc-400 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+            <p className="text-sm sm:text-base text-zinc-400 max-w-xl mx-auto lg:mx-0 leading-relaxed min-h-[48px]">
               {slide.description}
             </p>
 
@@ -143,14 +151,14 @@ export function HeroBanner() {
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
               <Link
                 href={slide.primaryCta.href}
-                className="w-full sm:w-auto bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold text-sm px-8 py-4 rounded-xl shadow-lg shadow-red-600/30 transition-all flex items-center justify-center gap-2 group"
+                className="w-full sm:w-auto bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold text-sm px-8 py-4 rounded-xl shadow-lg shadow-red-600/30 transition-all flex items-center justify-center gap-2 group active:scale-98"
               >
                 <span>{slide.primaryCta.label}</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link
                 href={slide.secondaryCta.href}
-                className="w-full sm:w-auto bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-800 hover:border-zinc-700 font-semibold text-sm px-7 py-4 rounded-xl transition-all flex items-center justify-center gap-2"
+                className="w-full sm:w-auto bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-800 hover:border-zinc-700 font-semibold text-sm px-7 py-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-98"
               >
                 <span>{slide.secondaryCta.label}</span>
               </Link>
@@ -167,42 +175,56 @@ export function HeroBanner() {
             </div>
           </div>
 
-          {/* Right Hero Visual */}
-          <div className="lg:col-span-5 relative" key={`img-${slide.id}`}>
+          {/* Right Hero Visual: Layered Pre-rendered GPU Crossfade */}
+          <div className="lg:col-span-5 relative">
             <div className="relative aspect-4/3 sm:aspect-[16/11] w-full rounded-3xl overflow-hidden border border-zinc-800 bg-zinc-900 shadow-2xl group">
-              <Image
-                src={slide.image}
-                alt={slide.imageAlt}
-                fill
-                priority={currentSlide === 0}
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
-                sizes="(max-width: 1024px) 100vw, 45vw"
-                style={{ animation: "fade-in 0.6s ease forwards" }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent" />
+              {heroSlides.map((s, idx) => {
+                const isActive = idx === currentSlide;
+                return (
+                  <div
+                    key={s.id}
+                    className={`absolute inset-0 transition-all duration-700 ease-out transform-gpu ${
+                      isActive
+                        ? "opacity-100 scale-100 z-10 pointer-events-auto"
+                        : "opacity-0 scale-98 z-0 pointer-events-none"
+                    }`}
+                  >
+                    <Image
+                      src={s.image}
+                      alt={s.imageAlt}
+                      fill
+                      priority={idx === 0}
+                      className="object-cover transition-transform duration-1000 group-hover:scale-105"
+                      sizes="(max-width: 1024px) 100vw, 45vw"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent" />
 
-              {/* Floating Info Chip */}
-              <div className="absolute bottom-5 inset-x-5 flex items-center justify-between bg-zinc-950/80 backdrop-blur-md p-4 rounded-2xl border border-zinc-800 text-xs glass-dark">
-                <div>
-                  <div className="flex items-center gap-1.5 text-red-500 font-bold uppercase tracking-wider text-[10px]">
-                    <Flame className="w-3.5 h-3.5" />
-                    {slide.cardBadge}
+                    {/* Floating Info Chip */}
+                    <div className="absolute bottom-5 inset-x-5 flex items-center justify-between bg-zinc-950/85 backdrop-blur-md p-4 rounded-2xl border border-zinc-800 text-xs shadow-xl">
+                      <div>
+                        <div className="flex items-center gap-1.5 text-red-500 font-bold uppercase tracking-wider text-[10px]">
+                          <Flame className="w-3.5 h-3.5" />
+                          {s.cardBadge}
+                        </div>
+                        <h3 className="font-bold text-white text-sm mt-0.5">{s.cardTitle}</h3>
+                        <p className="text-[11px] text-zinc-400">{s.cardSub}</p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <span className="text-[10px] text-zinc-400 block">Ex-Showroom BD</span>
+                        <span className="text-sm font-black text-white">{s.cardPrice}</span>
+                      </div>
+                    </div>
                   </div>
-                  <h3 className="font-bold text-white text-sm mt-0.5">{slide.cardTitle}</h3>
-                  <p className="text-[11px] text-zinc-400">{slide.cardSub}</p>
-                </div>
-                <div className="text-right shrink-0">
-                  <span className="text-[10px] text-zinc-400 block">Ex-Showroom BD</span>
-                  <span className="text-sm font-black text-white">{slide.cardPrice}</span>
-                </div>
-              </div>
+                );
+              })}
             </div>
 
             {/* Slide Navigation Dots + Arrow Buttons */}
             <div className="flex items-center justify-center gap-4 mt-5">
               <button
+                type="button"
                 onClick={prevSlide}
-                className="p-2 rounded-full bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 transition-colors text-zinc-400 hover:text-white"
+                className="p-2 rounded-full bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 transition-colors text-zinc-400 hover:text-white cursor-pointer active:scale-95"
                 aria-label="Previous slide"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -212,10 +234,11 @@ export function HeroBanner() {
                 {heroSlides.map((_, i) => (
                   <button
                     key={i}
+                    type="button"
                     onClick={() => goToSlide(i)}
-                    className={`transition-all duration-300 rounded-full ${
+                    className={`transition-all duration-300 rounded-full cursor-pointer ${
                       i === currentSlide
-                        ? "w-6 h-2 bg-red-600"
+                        ? "w-7 h-2 bg-red-600 shadow-sm shadow-red-600/50"
                         : "w-2 h-2 bg-zinc-700 hover:bg-zinc-500"
                     }`}
                     aria-label={`Go to slide ${i + 1}`}
@@ -224,8 +247,9 @@ export function HeroBanner() {
               </div>
 
               <button
+                type="button"
                 onClick={nextSlide}
-                className="p-2 rounded-full bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 transition-colors text-zinc-400 hover:text-white"
+                className="p-2 rounded-full bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 transition-colors text-zinc-400 hover:text-white cursor-pointer active:scale-95"
                 aria-label="Next slide"
               >
                 <ChevronRight className="w-4 h-4" />

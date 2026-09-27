@@ -16,7 +16,6 @@ interface ProductCardProps {
 export function ProductCard({ product, onQuickView }: ProductCardProps) {
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
-  const [isHovered, setIsHovered] = useState(false);
   const [added, setAdded] = useState(false);
 
   const isWishlisted = isInWishlist(product.id);
@@ -56,29 +55,38 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
     badgeClass = "bg-amber-600 text-white";
   }
 
-  const displayImage =
-    isHovered && product.images.length > 1 ? product.images[1] : product.images[0];
-
   return (
     <div
       className="group relative bg-white rounded-2xl border border-zinc-200/80 hover:border-zinc-300 hover:shadow-xl hover:shadow-zinc-200/50 transition-all duration-300 flex flex-col overflow-hidden"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       {/* Image Container */}
       <div className="relative aspect-square w-full bg-zinc-50 overflow-hidden">
         <Link href={`/product/${product.slug}`} className="relative block w-full h-full">
+          {/* Primary image */}
           <Image
-            src={displayImage}
+            src={product.images[0]}
             alt={product.name}
             fill
-            className="object-cover transition-transform duration-700 group-hover:scale-105"
+            className={`object-cover transition-all duration-500 ease-out transform-gpu group-hover:scale-105 ${
+              product.images.length > 1 ? "group-hover:opacity-0" : ""
+            }`}
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
           />
+
+          {/* Secondary image crossfade */}
+          {product.images.length > 1 && (
+            <Image
+              src={product.images[1]}
+              alt={`${product.name} - view 2`}
+              fill
+              className="object-cover opacity-0 group-hover:opacity-100 transition-all duration-500 ease-out transform-gpu group-hover:scale-105"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            />
+          )}
         </Link>
 
         {/* Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
+        <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10 pointer-events-none">
           {badgeText && (
             <span
               className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-xs ${badgeClass}`}
@@ -95,8 +103,9 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
 
         {/* Wishlist Button */}
         <button
+          type="button"
           onClick={handleWishlistToggle}
-          className={`absolute top-3 right-3 z-10 p-2 rounded-full backdrop-blur-md transition-all duration-200 ${
+          className={`absolute top-3 right-3 z-10 p-2 rounded-full backdrop-blur-md transition-all duration-200 cursor-pointer ${
             isWishlisted
               ? "bg-red-50 text-red-600 shadow-md scale-105"
               : "bg-white/80 hover:bg-white text-zinc-600 hover:text-zinc-950 shadow-sm"
@@ -107,12 +116,25 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
           <Heart className={`w-4 h-4 ${isWishlisted ? "fill-red-600 text-red-600" : ""}`} />
         </button>
 
-        {/* Hover Quick Actions Bar */}
-        <div className="absolute bottom-3 inset-x-3 z-10 flex gap-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+        {/* Mobile Quick Add Button (Bottom Right) */}
+        <button
+          type="button"
+          onClick={handleQuickAdd}
+          className={`md:hidden absolute bottom-3 right-3 z-10 p-2.5 rounded-full shadow-md transition-all active:scale-90 cursor-pointer ${
+            added ? "bg-emerald-600 text-white" : "bg-white/95 text-zinc-900 border border-zinc-200"
+          }`}
+          aria-label="Quick add to cart"
+        >
+          {added ? <Check className="w-4 h-4" /> : <ShoppingBag className="w-4 h-4 text-red-600" />}
+        </button>
+
+        {/* Desktop Hover Quick Actions Bar */}
+        <div className="hidden md:flex absolute bottom-3 inset-x-3 z-10 gap-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
           {onQuickView && (
             <button
+              type="button"
               onClick={handleQuickViewClick}
-              className="flex-1 bg-white/95 hover:bg-white text-zinc-900 text-xs font-bold py-2.5 px-3 rounded-xl shadow-md border border-zinc-200 transition-all flex items-center justify-center gap-1.5 backdrop-blur-sm"
+              className="flex-1 bg-white/95 hover:bg-white text-zinc-900 text-xs font-bold py-2.5 px-3 rounded-xl shadow-md border border-zinc-200 transition-all flex items-center justify-center gap-1.5 backdrop-blur-sm cursor-pointer active:scale-95"
             >
               <Eye className="w-3.5 h-3.5 text-zinc-600" />
               <span>Quick View</span>
@@ -120,8 +142,9 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
           )}
 
           <button
+            type="button"
             onClick={handleQuickAdd}
-            className={`flex-1 text-xs font-bold py-2.5 px-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5 ${
+            className={`flex-1 text-xs font-bold py-2.5 px-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 ${
               added
                 ? "bg-emerald-600 text-white"
                 : "bg-red-600 hover:bg-red-700 text-white shadow-red-600/20"

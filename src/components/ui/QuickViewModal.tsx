@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { X, Star, ShoppingBag, Heart, ShieldCheck, Check, ArrowRight } from "lucide-react";
@@ -22,6 +22,33 @@ export function QuickViewModal({ product, onClose }: QuickViewModalProps) {
   const [selectedColor, setSelectedColor] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
 
+  // Sync state whenever opened product changes
+  useEffect(() => {
+    if (product) {
+      setSelectedImage(0);
+      setSelectedSize(product.sizes?.[0] || "");
+      setSelectedColor(product.colors?.[0]?.name || "");
+      setQuantity(1);
+    }
+  }, [product?.id]);
+
+  // Body scroll lock & Escape listener
+  useEffect(() => {
+    if (product) {
+      document.body.style.overflow = "hidden";
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") onClose();
+      };
+      window.addEventListener("keydown", handleKeyDown);
+      return () => {
+        document.body.style.overflow = "";
+        window.removeEventListener("keydown", handleKeyDown);
+      };
+    } else {
+      document.body.style.overflow = "";
+    }
+  }, [product, onClose]);
+
   if (!product) return null;
 
   const currentSize = selectedSize || product.sizes?.[0] || "";
@@ -34,8 +61,14 @@ export function QuickViewModal({ product, onClose }: QuickViewModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden border border-zinc-200 max-h-[90vh] flex flex-col md:flex-row">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden border border-zinc-200 max-h-[90vh] flex flex-col md:flex-row"
+      >
         {/* Close Button */}
         <button
           onClick={onClose}

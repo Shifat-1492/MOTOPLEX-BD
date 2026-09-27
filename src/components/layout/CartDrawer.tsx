@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { X, Trash2, ShoppingBag, ArrowRight, ShieldCheck, Tag, Truck } from "lucide-react";
@@ -26,6 +26,22 @@ export function CartDrawer() {
   } = useCart();
 
   const [couponInput, setCouponInput] = useState("");
+
+  useEffect(() => {
+    if (isCartOpen) {
+      document.body.style.overflow = "hidden";
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") setIsCartOpen(false);
+      };
+      window.addEventListener("keydown", handleKeyDown);
+      return () => {
+        document.body.style.overflow = "";
+        window.removeEventListener("keydown", handleKeyDown);
+      };
+    } else {
+      document.body.style.overflow = "";
+    }
+  }, [isCartOpen, setIsCartOpen]);
 
   if (!isCartOpen) return null;
 
